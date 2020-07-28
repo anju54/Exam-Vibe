@@ -20,7 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
 import project.exam.vibe.batch.QuestionItemProcessor;
@@ -61,11 +64,18 @@ public class BatchConfig {
 	}
 	
 	@Bean
-	public FlatFileItemReader<Questions> fileItemReader() throws IOException{
+	@Scope(value = "step", proxyMode = ScopedProxyMode.TARGET_CLASS)
+	public FlatFileItemReader<Questions> fileItemReader( @Value("#{jobParameters['fileName']}") String fileName ) throws IOException{
 		
-		Resource resource =  new ClassPathResource("sheet1.csv");
+		System.out.println("------------------------  "+fileName);
+		System.out.println("------------------------  "+filePath);
+		
+		Resource resource =  new ClassPathResource(filePath+fileName);
+		
+		//Resource resource =  new ClassPathResource("sheet1.csv");
 		FlatFileItemReader<Questions> flatFileItemReader = new FlatFileItemReader<>();
-		flatFileItemReader.setResource(resource);
+		flatFileItemReader.setResource(new FileSystemResource(fileName));
+		//flatFileItemReader.setResource(resource);
 		flatFileItemReader.setName("Csv_reader");
 		flatFileItemReader.setLinesToSkip(1);
 		flatFileItemReader.setLineMapper(lineMapper());
