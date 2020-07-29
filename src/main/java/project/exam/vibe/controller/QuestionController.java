@@ -1,10 +1,8 @@
 package project.exam.vibe.controller;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +18,6 @@ import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteExcep
 import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import project.exam.vibe.model.Questions;
+import project.exam.vibe.service.CsvProcessor;
 import project.exam.vibe.service.StorageService;
 
 @RestController
@@ -47,6 +45,9 @@ public class QuestionController {
 	@Autowired
 	private StorageService storageService;
 	
+	@Autowired
+	private CsvProcessor csvProcessor;
+	
 	private static final Logger logger = LoggerFactory.getLogger(QuestionController.class);
 	
 	
@@ -55,18 +56,15 @@ public class QuestionController {
 		
 		logger.info(file.getOriginalFilename());
 		
-		System.out.println();
 		
-		Resource res =  file.getResource();
-		InputStream ip =  res.getInputStream();
-		
-		
-		
-//		logger.info(filePath);
-//		
-//		storageService.uploadFile(file);
 		
 		return "done";
+	}
+	
+	@PostMapping(value="/question", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
+	public List<Questions> saveQuestion(MultipartFile file) throws IOException{
+		
+		return csvProcessor.readCSVdataLineByLine(file);
 	}
 	
 	@PostMapping(value="/questions", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
